@@ -1,13 +1,21 @@
+/* eslint-disable space-unary-ops */
 const Eris = require('eris');
 const path = require('path');
 
 const config = require('./config');
 const bot = require('./bot');
 const knex = require('./knex');
-const {messageQueue} = require('./queue');
+const {
+  messageQueue
+} = require('./queue');
 const utils = require('./utils');
-const { createCommandManager } = require('./commands');
-const { getPluginAPI, loadPlugin } = require('./plugins');
+const {
+  createCommandManager
+} = require('./commands');
+const {
+  getPluginAPI,
+  loadPlugin
+} = require('./plugins');
 
 const blocked = require('./data/blocked');
 const threads = require('./data/threads');
@@ -28,7 +36,9 @@ const newthread = require('./modules/newthread');
 const idModule = require('./modules/id');
 const alert = require('./modules/alert');
 
-const {ACCIDENTAL_THREAD_MESSAGES} = require('./data/constants');
+const {
+  ACCIDENTAL_THREAD_MESSAGES
+} = require('./data/constants');
 
 module.exports = {
   async start() {
@@ -71,7 +81,9 @@ function waitForGuild(guildId) {
 
 function initStatus() {
   function applyStatus() {
-    bot.editStatus(null, {name: config.status});
+    bot.editStatus(null, {
+      name: config.status
+    });
   }
 
   // Set the bot status initially, then reapply it every hour since in some cases it gets unset
@@ -80,24 +92,28 @@ function initStatus() {
 }
 
 function initBaseMessageHandlers() {
+
+  // get the mail guild
+  const mail = bot.guilds.get(config.mailGuildId);
+
   /**
    * When a moderator posts in a modmail thread...
    * 1) If alwaysReply is enabled, reply to the user
    * 2) If alwaysReply is disabled, save that message as a chat message in the thread
    */
   bot.on('messageCreate', async msg => {
-    if (! utils.messageIsOnInboxServer(msg)) return;
+    if (!utils.messageIsOnInboxServer(msg)) return;
     if (msg.author.bot) return;
 
     const thread = await threads.findByChannelId(msg.channel.id);
-    if (! thread) return;
+    if (!thread) return;
 
     if (msg.content.startsWith(config.prefix) || msg.content.startsWith(config.snippetPrefix)) {
       // Save commands as "command messages"
       thread.saveCommandMessageToLogs(msg);
     } else if (config.alwaysReply) {
       // AUTO-REPLY: If config.alwaysReply is enabled, send all chat messages in thread channels as replies
-      if (! utils.isStaff(msg.member)) return; // Only staff are allowed to reply
+      if (!utils.isStaff(msg.member)) return; // Only staff are allowed to reply
 
       const replied = await thread.replyToUser(msg.member, msg.content.trim(), msg.attachments, config.alwaysReplyAnon || false);
       if (replied) msg.delete();
@@ -113,7 +129,7 @@ function initBaseMessageHandlers() {
    * 2) Post the message as a user reply in the thread
    */
   bot.on('messageCreate', async msg => {
-    if (! (msg.channel instanceof Eris.PrivateChannel)) return;
+    if (!(msg.channel instanceof Eris.PrivateChannel)) return;
     if (msg.author.bot) return;
     if (msg.type !== 0) return; // Ignore pins etc.
 
@@ -125,7 +141,7 @@ function initBaseMessageHandlers() {
 
 
       // New thread
-      if (! thread) {
+      if (!thread) {
         // Ignore messages that shouldn't usually open new threads, such as "ok", "thanks", etc.
         if (config.ignoreAccidentalThreads && msg.content && ACCIDENTAL_THREAD_MESSAGES.includes(msg.content.trim().toLowerCase())) return;
 
@@ -135,6 +151,8 @@ function initBaseMessageHandlers() {
       if (thread) {
         await thread.receiveUserReply(msg);
       }
+      //check thread position and move it if needed
+      bump(mail, thread);
     });
   });
 
@@ -144,7 +162,7 @@ function initBaseMessageHandlers() {
    * 2) If that message was moderator chatter in the thread, update the corresponding chat message in the DB
    */
   bot.on('messageUpdate', async (msg, oldMessage) => {
-    if (! msg || ! msg.author) return;
+    if (!msg || !msg.author) return;
     if (msg.author.bot) return;
     if (await blocked.isBlocked(msg.author.id)) return;
 
@@ -158,18 +176,22 @@ function initBaseMessageHandlers() {
     // 1) If this edit was in DMs
     if (msg.channel instanceof Eris.PrivateChannel) {
       const thread = await threads.findOpenThreadByUserId(msg.author.id);
-      if (! thread) return;
+      if (!thread) return;
 
       const editMessage = utils.disableLinkPreviews(`**The user edited their message:**\n\`B:\` ${oldContent}\n\`A:\` ${newContent}`);
       thread.postSystemMessage(editMessage);
+      //check thread position and move it if needed
+      bump(mail, thread);
     }
 
     // 2) If this edit was a chat message in the thread
     else if (utils.messageIsOnInboxServer(msg) && utils.isStaff(msg.member)) {
       const thread = await threads.findOpenThreadByChannelId(msg.channel.id);
-      if (! thread) return;
+      if (!thread) return;
 
       thread.updateChatMessageInLogs(msg);
+      //check thread position and move it if needed
+      bump(mail, thread);
     }
   });
 
@@ -177,13 +199,13 @@ function initBaseMessageHandlers() {
    * When a staff message is deleted in a modmail thread, delete it from the database as well
    */
   bot.on('messageDelete', async msg => {
-    if (! msg.author) return;
+    if (!msg.author) return;
     if (msg.author.bot) return;
-    if (! utils.messageIsOnInboxServer(msg)) return;
-    if (! utils.isStaff(msg.member)) return;
+    if (!utils.messageIsOnInboxServer(msg)) return;
+    if (!utils.isStaff(msg.member)) return;
 
     const thread = await threads.findOpenThreadByChannelId(msg.channel.id);
-    if (! thread) return;
+    if (!thread) return;
 
     thread.deleteChatMessageFromLogs(msg.id);
   });
@@ -192,8 +214,8 @@ function initBaseMessageHandlers() {
    * When the bot is mentioned on the main server, ping staff in the log channel about it
    */
   bot.on('messageCreate', async msg => {
-    if (! utils.messageIsOnMainServer(msg)) return;
-    if (! msg.mentions.some(user => user.id === bot.user.id)) return;
+    if (!utils.messageIsOnMainServer(msg)) return;
+    if (!msg.mentions.some(user => user.id === bot.user.id)) return;
     if (msg.author.bot) return;
 
     if (utils.messageIsOnInboxServer(msg)) {
@@ -213,9 +235,9 @@ function initBaseMessageHandlers() {
     const staffMention = (config.pingOnBotMention ? utils.getInboxMention() : '');
 
     if (mainGuilds.length === 1) {
-        content = `${staffMention}Bot mentioned in ${msg.channel.mention} by **${msg.author.username}#${msg.author.discriminator}(${msg.author.id})**: "${msg.cleanContent}"\n\n<https:\/\/discordapp.com\/channels\/${msg.channel.guild.id}\/${msg.channel.id}\/${msg.id}>`;
+      content = `${staffMention}Bot mentioned in ${msg.channel.mention} by **${msg.author.username}#${msg.author.discriminator}(${msg.author.id})**: "${msg.cleanContent}"\n\n<https:\/\/discordapp.com\/channels\/${msg.channel.guild.id}\/${msg.channel.id}\/${msg.id}>`;
     } else {
-        content = `${staffMention}Bot mentioned in ${msg.channel.mention} (${msg.channel.guild.name}) by **${msg.author.username}#${msg.author.discriminator}(${msg.author.id})**: "${msg.cleanContent}"\n\n<https:\/\/discordapp.com\/channels\/${msg.channel.guild.id}\/${msg.channel.id}\/${msg.id}>`;
+      content = `${staffMention}Bot mentioned in ${msg.channel.mention} (${msg.channel.guild.name}) by **${msg.author.username}#${msg.author.discriminator}(${msg.author.id})**: "${msg.cleanContent}"\n\n<https:\/\/discordapp.com\/channels\/${msg.channel.guild.id}\/${msg.channel.id}\/${msg.id}>`;
     }
 
 
@@ -230,6 +252,20 @@ function initBaseMessageHandlers() {
       bot.createMessage(msg.channel.id, botMentionResponse.replace(/{userMention}/g, `<@${msg.author.id}>`));
     }
   });
+}
+
+function bump(mail, thr) {
+  let channel = mail.channels.get(thr.channel_id);
+  let category = mail.channels.get(channel.parentID);
+  let fp = category.channels
+    .map(c => {
+      return (c.position);
+    })
+    .sort((a, b) => a - b)[0];
+  if (channel.position != fp && !/^_/.test(category.name)) {
+    channel.editPosition(fp);
+    console.log(`[NOTE] Bumping thread ${channel.name} in category ${category.name}`);
+  }
 }
 
 function initPlugins() {
@@ -271,7 +307,12 @@ function initPlugins() {
     }
   }
 
-  const pluginApi = getPluginAPI({ bot, knex, config, commands });
+  const pluginApi = getPluginAPI({
+    bot,
+    knex,
+    config,
+    commands
+  });
   plugins.forEach(pluginFn => loadPlugin(pluginFn, pluginApi));
 
   console.log(`Loaded ${plugins.length} plugins (${builtInPlugins.length} built-in plugins, ${plugins.length - builtInPlugins.length} external plugins)`);
