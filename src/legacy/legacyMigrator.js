@@ -9,7 +9,10 @@ const config = require('../config');
 const jsonDb = require('./jsonDb');
 const threads = require('../data/threads');
 
-const {THREAD_STATUS, THREAD_MESSAGE_TYPE} = require('../data/constants');
+const {
+  THREAD_STATUS,
+  THREAD_MESSAGE_TYPE
+} = require('../data/constants');
 
 const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
@@ -62,7 +65,7 @@ async function shouldMigrate() {
   try {
     const files = await readDir(config.logDir);
     if (files.length > 1) return true; // > 1, since .gitignore is one of them
-  } catch(e) {}
+  } catch (e) {}
 
   return false;
 }
@@ -82,7 +85,7 @@ async function migrateOpenThreads() {
         if (existingOpenThread) return;
 
         const oldChannel = bot.getChannel(oldThread.channelId);
-        if (! oldChannel) return;
+        if (!oldChannel) return;
 
         const threadMessages = await oldChannel.getMessages(1000);
         const log = threadMessages.reverse().map(msg => {
@@ -128,13 +131,15 @@ async function migrateLogs() {
 
   for (let i = 0; i < logFiles.length; i++) {
     const logFile = logFiles[i];
-    if (! logFile.endsWith('.txt')) continue;
+    if (!logFile.endsWith('.txt')) continue;
 
     const [rawDate, userId, threadId] = logFile.slice(0, -4).split('__');
     const date = `${rawDate.slice(0, 10)} ${rawDate.slice(11).replace('-', ':')}`;
 
     const fullPath = path.join(logDir, logFile);
-    const contents = await readFile(fullPath, {encoding: 'utf8'});
+    const contents = await readFile(fullPath, {
+      encoding: 'utf8'
+    });
 
     const newThread = {
       id: threadId,

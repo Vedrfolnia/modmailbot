@@ -17,8 +17,8 @@ let logChannel = null;
  * @returns {Eris~Guild}
  */
 function getInboxGuild() {
-  if (! inboxGuild) inboxGuild = bot.guilds.find(g => g.id === config.mailGuildId);
-  if (! inboxGuild) throw new BotError('The bot is not on the modmail (inbox) server!');
+  if (!inboxGuild) inboxGuild = bot.guilds.find(g => g.id === config.mailGuildId);
+  if (!inboxGuild) throw new BotError('The bot is not on the modmail (inbox) server!');
   return inboxGuild;
 }
 
@@ -49,11 +49,11 @@ function getLogChannel() {
   const inboxGuild = getInboxGuild();
   const logChannel = inboxGuild.channels.get(config.logChannelId);
 
-  if (! logChannel) {
+  if (!logChannel) {
     throw new BotError('Log channel (logChannelId) not found!');
   }
 
-  if (! (logChannel instanceof Eris.TextChannel)) {
+  if (!(logChannel instanceof Eris.TextChannel)) {
     throw new BotError('Make sure the logChannelId option is set to a text channel!');
   }
 
@@ -77,7 +77,7 @@ function postError(channel, str, opts = {}) {
  * @returns {boolean}
  */
 function isStaff(member) {
-  if (! member) return false;
+  if (!member) return false;
   if (config.inboxServerPermission.length === 0) return true;
   if (member.guild.ownerID === member.id) return true;
 
@@ -101,7 +101,7 @@ function isStaff(member) {
  * @returns {boolean}
  */
 function messageIsOnInboxServer(msg) {
-  if (! msg.channel.guild) return false;
+  if (!msg.channel.guild) return false;
   if (msg.channel.guild.id !== getInboxGuild().id) return false;
   return true;
 }
@@ -112,7 +112,7 @@ function messageIsOnInboxServer(msg) {
  * @returns {boolean}
  */
 function messageIsOnMainServer(msg) {
-  if (! msg.channel.guild) return false;
+  if (!msg.channel.guild) return false;
 
   return getMainGuilds()
     .some(g => msg.channel.guild.id === g.id);
@@ -135,7 +135,7 @@ async function formatAttachment(attachment, attachmentUrl) {
  * @returns {String|null}
  */
 function getUserMention(str) {
-  if (! str) return null;
+  if (!str) return null;
 
   str = str.trim();
 
@@ -238,7 +238,7 @@ function convertDelayStringToMS(str) {
     if (match[2] === 'd') ms += match[1] * 1000 * 60 * 60 * 24;
     else if (match[2] === 'h') ms += match[1] * 1000 * 60 * 60;
     else if (match[2] === 's') ms += match[1] * 1000;
-    else if (match[2] === 'm' || ! match[2]) ms += match[1] * 1000 * 60;
+    else if (match[2] === 'm' || !match[2]) ms += match[1] * 1000 * 60;
 
     str = str.slice(match[0].length);
   }
@@ -278,7 +278,7 @@ function postSystemMessageWithFallback(channel, thread, text) {
  */
 function setDataModelProps(target, props) {
   for (const prop in props) {
-    if (! props.hasOwnProperty(prop)) continue;
+    if (!props.hasOwnProperty(prop)) continue;
     // DATETIME fields are always returned as Date objects in MySQL/MariaDB
     if (props[prop] instanceof Date) {
       // ...even when NULL, in which case the date's set to unix epoch
@@ -295,13 +295,17 @@ function setDataModelProps(target, props) {
 }
 
 const snowflakeRegex = /^[0-9]{17,}$/;
+
 function isSnowflake(str) {
   return str && snowflakeRegex.test(str);
 }
 
-const humanizeDelay = (delay, opts = {}) => humanizeDuration(delay, Object.assign({conjunction: ' and '}, opts));
+const humanizeDelay = (delay, opts = {}) => humanizeDuration(delay, Object.assign({
+  conjunction: ' and '
+}, opts));
 
 const markdownCharsRegex = /([\\_*|`~])/g;
+
 function escapeMarkdown(str) {
   return str.replace(markdownCharsRegex, '\\$1');
 }

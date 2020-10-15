@@ -4,10 +4,15 @@ const utils = require("../utils");
 
 const LOG_LINES_PER_PAGE = 10;
 
-module.exports = ({ bot, knex, config, commands }) => {
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
   const logsCmd = async (msg, args, thread) => {
     let userId = args.userId || (thread && thread.user_id);
-    if (! userId) return;
+    if (!userId) return;
 
     let userThreads = await threads.getClosedThreadsByUserId(userId);
 
@@ -34,9 +39,9 @@ module.exports = ({ bot, knex, config, commands }) => {
       return `\`${formattedDate}\`: <${logUrl}>`;
     }));
 
-    let message = isPaginated
-      ? `**Log files for <@${userId}>** (page **${page}/${maxPage}**, showing logs **${start + 1}-${end}/${totalUserThreads}**):`
-      : `**Log files for <@${userId}>:**`;
+    let message = isPaginated ?
+      `**Log files for <@${userId}>** (page **${page}/${maxPage}**, showing logs **${start + 1}-${end}/${totalUserThreads}**):` :
+      `**Log files for <@${userId}>:**`;
 
     message += `\n${threadLines.join('\n')}`;
 
@@ -58,9 +63,9 @@ module.exports = ({ bot, knex, config, commands }) => {
   commands.addInboxServerCommand('logs', '[page:number]', logsCmd);
 
   commands.addInboxServerCommand('loglink', [], async (msg, args, thread) => {
-    if (! thread) {
+    if (!thread) {
       thread = await threads.findSuspendedThreadByChannelId(msg.channel.id);
-      if (! thread) return;
+      if (!thread) return;
     }
 
     const logUrl = await thread.getLogUrl();
@@ -71,8 +76,7 @@ module.exports = ({ bot, knex, config, commands }) => {
 
     thread.postSystemMessage(`Log URL: ${logUrl}${qs}`);
   }, {
-    options: [
-      {
+    options: [{
         name: 'verbose',
         shortcut: 'v',
         isSwitch: true,

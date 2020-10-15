@@ -8,7 +8,10 @@ const attachments = require('./attachments');
 
 const ThreadMessage = require('./ThreadMessage');
 
-const {THREAD_MESSAGE_TYPE, THREAD_STATUS} = require('./constants');
+const {
+  THREAD_MESSAGE_TYPE,
+  THREAD_STATUS
+} = require('./constants');
 
 /**
  * @property {String} id
@@ -38,9 +41,9 @@ class Thread {
   _formatStaffReplyDM(moderator, text, isAnonymous) {
     const mainRole = utils.getMainRole(moderator);
     const modName = (config.useNicknames ? moderator.nick || moderator.user.username : moderator.user.username);
-    const modInfo = isAnonymous
-      ? (mainRole ? mainRole.name : 'Moderator')
-      : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
+    const modInfo = isAnonymous ?
+      (mainRole ? mainRole.name : 'Moderator') :
+      (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     return `**${modInfo}:** ${text}`;
   }
@@ -57,9 +60,9 @@ class Thread {
   _formatStaffReplyThreadMessage(moderator, text, isAnonymous, messageNumber, timestamp) {
     const mainRole = utils.getMainRole(moderator);
     const modName = (config.useNicknames ? moderator.nick || moderator.user.username : moderator.user.username);
-    const modInfo = isAnonymous
-      ? `(Anonymous) (${modName}) ${mainRole ? mainRole.name : 'Moderator'}`
-      : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
+    const modInfo = isAnonymous ?
+      `(Anonymous) (${modName}) ${mainRole ? mainRole.name : 'Moderator'}` :
+      (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     // TODO: Add \`[${messageNumber}]\` here once !edit and !delete exist
     let result = `**${modInfo}:** ${text}`;
@@ -85,9 +88,9 @@ class Thread {
     const modName = moderator.user.username;
 
     // Mirroring the DM formatting here...
-    const modInfo = isAnonymous
-      ? (mainRole ? mainRole.name : 'Moderator')
-      : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
+    const modInfo = isAnonymous ?
+      (mainRole ? mainRole.name : 'Moderator') :
+      (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     let result = `**${modInfo}:** ${text}`;
 
@@ -111,9 +114,9 @@ class Thread {
    * @private
    */
   _formatUserReplyThreadMessage(user, body, embeds, formattedAttachments = [], timestamp) {
-    const content = (body.trim() === '' && embeds.length)
-      ? '<message contains embeds>'
-      : body;
+    const content = (body.trim() === '' && embeds.length) ?
+      '<message contains embeds>' :
+      body;
 
     let result = `**${user.username}#${user.discriminator}:** ${content}`;
 
@@ -140,9 +143,9 @@ class Thread {
    * @private
    */
   _formatUserReplyLogMessage(user, body, embeds, formattedAttachments = []) {
-    const content = (body.trim() === '' && embeds.length)
-      ? '<message contains embeds>'
-      : body;
+    const content = (body.trim() === '' && embeds.length) ?
+      '<message contains embeds>' :
+      body;
 
     let result = content;
 
@@ -165,7 +168,7 @@ class Thread {
   async _sendDMToUser(text, file = null) {
     // Try to open a DM channel with the user
     const dmChannel = await this.getDMChannel();
-    if (! dmChannel) {
+    if (!dmChannel) {
       throw new Error('Could not open DMs with the user. They may have blocked the bot or set their privacy settings higher.');
     }
 
@@ -174,7 +177,7 @@ class Thread {
     const messages = await Promise.all(chunks.map((chunk, i) => {
       return dmChannel.createMessage(
         chunk,
-        (i === chunks.length - 1 ? file : undefined)  // Only send the file with the last message
+        (i === chunks.length - 1 ? file : undefined) // Only send the file with the last message
       );
     }));
     return messages[0];
@@ -308,7 +311,9 @@ class Thread {
     // Show the reply in the inbox thread
     const inboxContent = this._formatStaffReplyThreadMessage(moderator, text, isAnonymous, threadMessage.message_number, null);
     const inboxMessage = await this._postToThreadChannel(inboxContent, files);
-    await this._updateThreadMessage(threadMessage.id, { inbox_message_id: inboxMessage.id });
+    await this._updateThreadMessage(threadMessage.id, {
+      inbox_message_id: inboxMessage.id
+    });
 
     // Interrupt scheduled closing, if in progress
     if (this.scheduled_close_at) {
@@ -360,7 +365,9 @@ class Thread {
     // Show user reply in the inbox thread
     const inboxContent = this._formatUserReplyThreadMessage(msg.author, msg.content, msg.embeds, threadFormattedAttachments, null);
     const inboxMessage = await this._postToThreadChannel(inboxContent, attachmentFiles);
-    if (inboxMessage) await this._updateThreadMessage(threadMessage.id, { inbox_message_id: inboxMessage.id });
+    if (inboxMessage) await this._updateThreadMessage(threadMessage.id, {
+      inbox_message_id: inboxMessage.id
+    });
 
     // Interrupt scheduled closing, if in progress
     if (this.scheduled_close_at) {
@@ -503,7 +510,7 @@ class Thread {
    * @returns {Promise<void>}
    */
   async close(suppressSystemMessage = false, silent = false) {
-    if (! suppressSystemMessage) {
+    if (!suppressSystemMessage) {
       console.log(`Closing thread ${this.id}`);
 
       if (silent) {

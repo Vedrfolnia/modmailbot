@@ -3,9 +3,16 @@ const threads = require("../data/threads");
 const utils = require('../utils');
 const config = require('../config');
 
-const {THREAD_STATUS} = require('../data/constants');
+const {
+  THREAD_STATUS
+} = require('../data/constants');
 
-module.exports = ({ bot, knex, config, commands }) => {
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
   // Check for threads that are scheduled to be suspended and suspend them
   async function applyScheduledSuspensions() {
     const threadsToBeSuspended = await threads.getThreadsThatShouldBeSuspended();
@@ -60,7 +67,7 @@ module.exports = ({ bot, knex, config, commands }) => {
     }
 
     thread = await threads.findSuspendedThreadByChannelId(msg.channel.id);
-    if (! thread) {
+    if (!thread) {
       msg.channel.createMessage(`Not in a thread`);
       return;
     }

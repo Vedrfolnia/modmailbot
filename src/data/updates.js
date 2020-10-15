@@ -9,7 +9,7 @@ let updateCheckPromise = null;
 
 async function initUpdatesTable() {
   const row = await knex('updates').first();
-  if (! row) {
+  if (!row) {
     await knex('updates').insert({
       available_version: null,
       last_checked: null,
@@ -24,23 +24,24 @@ async function initUpdatesTable() {
  */
 async function refreshVersions() {
   await initUpdatesTable();
-  const { last_checked } = await knex('updates').first();
+  const {
+    last_checked
+  } = await knex('updates').first();
 
   // Only refresh available version if it's been more than UPDATE_CHECK_FREQUENCY since our last check
   if (last_checked != null && last_checked > moment.utc().subtract(UPDATE_CHECK_FREQUENCY, 'hours').format('YYYY-MM-DD HH:mm:ss')) return;
 
   const packageJson = require('../../package.json');
   const repositoryUrl = packageJson.repository && packageJson.repository.url;
-  if (! repositoryUrl) return;
+  if (!repositoryUrl) return;
 
   const parsedUrl = url.parse(repositoryUrl);
   if (parsedUrl.hostname !== 'github.com') return;
 
   const [, owner, repo] = parsedUrl.pathname.split('/');
-  if (! owner || ! repo) return;
+  if (!owner || !repo) return;
 
-  https.get(
-    {
+  https.get({
       hostname: 'api.github.com',
       path: `/repos/${owner}/${repo}/tags`,
       headers: {
@@ -60,7 +61,7 @@ async function refreshVersions() {
       res.on('data', chunk => data += chunk);
       res.on('end', async () => {
         const parsed = JSON.parse(data);
-        if (! Array.isArray(parsed) || parsed.length === 0) return;
+        if (!Array.isArray(parsed) || parsed.length === 0) return;
 
         const latestVersion = parsed[0].name;
         await knex('updates').update({
@@ -94,7 +95,9 @@ async function getAvailableUpdate() {
 
   const packageJson = require('../../package.json');
   const currentVersion = packageJson.version;
-  const { available_version: availableVersion } = await knex('updates').first();
+  const {
+    available_version: availableVersion
+  } = await knex('updates').first();
   if (availableVersion == null) return null;
   if (currentVersion == null) return availableVersion;
 

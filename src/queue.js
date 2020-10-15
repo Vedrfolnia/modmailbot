@@ -11,7 +11,7 @@ class Queue {
         resolve();
       });
 
-      if (! this.running) this.next();
+      if (!this.running) this.next();
     });
 
     return promise;

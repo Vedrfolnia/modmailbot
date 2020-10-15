@@ -3,16 +3,18 @@ const fs = require('fs');
 const config = require('../config');
 const utils = require('../utils');
 
-module.exports = ({ bot }) => {
-  if (! config.enableGreeting) return;
+module.exports = ({
+  bot
+}) => {
+  if (!config.enableGreeting) return;
 
   bot.on('guildMemberAdd', (guild, member) => {
     const guildGreeting = config.guildGreetings[guild.id];
-    if (! guildGreeting || (! guildGreeting.message && ! guildGreeting.attachment)) return;
+    if (!guildGreeting || (!guildGreeting.message && !guildGreeting.attachment)) return;
 
     function sendGreeting(message, file) {
       bot.getDMChannel(member.id).then(channel => {
-        if (! channel) return;
+        if (!channel) return;
 
         channel.createMessage(message || '', file)
           .catch(e => {
@@ -27,7 +29,10 @@ module.exports = ({ bot }) => {
     if (guildGreeting.attachment) {
       const filename = path.basename(guildGreeting.attachment);
       fs.readFile(guildGreeting.attachment, (err, data) => {
-        const file = {file: data, name: filename};
+        const file = {
+          file: data,
+          name: filename
+        };
         sendGreeting(greetingMessage, file);
       });
     } else {

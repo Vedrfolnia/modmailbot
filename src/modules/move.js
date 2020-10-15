@@ -3,8 +3,13 @@ const Eris = require('eris');
 const transliterate = require("transliteration");
 const erisEndpoints = require('eris/lib/rest/Endpoints');
 
-module.exports = ({ bot, knex, config, commands }) => {
-  if (! config.allowMove) return;
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
+  if (!config.allowMove) return;
 
   commands.addInboxThreadCommand('move', '<category:string$>', async (msg, args, thread) => {
     const searchStr = args.category;
@@ -23,7 +28,7 @@ module.exports = ({ bot, knex, config, commands }) => {
 
       let i = 0;
       do {
-        if (! normalizedCatName.includes(normalizedSearchStr.slice(0, i + 1))) break;
+        if (!normalizedCatName.includes(normalizedSearchStr.slice(0, i + 1))) break;
         i++;
       } while (i < normalizedSearchStr.length);
 

@@ -4,14 +4,21 @@ const config = require('../config');
 const utils = require('../utils');
 const threads = require('../data/threads');
 const blocked = require('../data/blocked');
-const {messageQueue} = require('../queue');
+const {
+  messageQueue
+} = require('../queue');
 
-module.exports = ({ bot, knex, config, commands }) => {
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
   // Check for threads that are scheduled to be closed and close them
   async function applyScheduledCloses() {
     const threadsToBeClosed = await threads.getThreadsThatShouldBeClosed();
     for (const thread of threadsToBeClosed) {
-      if (config.closeMessage && ! thread.scheduled_close_silent) {
+      if (config.closeMessage && !thread.scheduled_close_silent) {
         const closeMessage = utils.readMultilineConfigValue(config.closeMessage);
         await thread.sendSystemMessageToUser(closeMessage).catch(() => {});
       }
@@ -42,16 +49,16 @@ module.exports = ({ bot, knex, config, commands }) => {
   commands.addGlobalCommand('close', '[opts...]', async (msg, args) => {
     let thread, closedBy;
 
-    let hasCloseMessage = !! config.closeMessage;
+    let hasCloseMessage = !!config.closeMessage;
     let silentClose = false;
 
     if (msg.channel instanceof Eris.PrivateChannel) {
       // User is closing the thread by themselves (if enabled)
-      if (! config.allowUserClose) return;
+      if (!config.allowUserClose) return;
       if (await blocked.isBlocked(msg.author.id)) return;
 
       thread = await threads.findOpenThreadByUserId(msg.author.id);
-      if (! thread) return;
+      if (!thread) return;
 
       // We need to add this operation to the message queue so we don't get a race condition
       // between showing the close command in the thread and closing the thread
@@ -63,11 +70,11 @@ module.exports = ({ bot, knex, config, commands }) => {
       closedBy = 'the user';
     } else {
       // A staff member is closing the thread
-      if (! utils.messageIsOnInboxServer(msg)) return;
-      if (! utils.isStaff(msg.member)) return;
+      if (!utils.messageIsOnInboxServer(msg)) return;
+      if (!utils.isStaff(msg.member)) return;
 
       thread = await threads.findOpenThreadByChannelId(msg.channel.id);
-      if (! thread) return;
+      if (!thread) return;
 
       if (args.opts && args.opts.length) {
         if (args.opts.includes('cancel') || args.opts.includes('c')) {
@@ -116,7 +123,7 @@ module.exports = ({ bot, knex, config, commands }) => {
     }
 
     // Send close message (unless suppressed with a silent close)
-    if (hasCloseMessage && ! silentClose) {
+    if (hasCloseMessage && !silentClose) {
       const closeMessage = utils.readMultilineConfigValue(config.closeMessage);
       await thread.sendSystemMessageToUser(closeMessage).catch(() => {});
     }
@@ -130,11 +137,11 @@ module.exports = ({ bot, knex, config, commands }) => {
 
   // Auto-close threads if their channel is deleted
   bot.on('channelDelete', async (channel) => {
-    if (! (channel instanceof Eris.TextChannel)) return;
+    if (!(channel instanceof Eris.TextChannel)) return;
     if (channel.guild.id !== utils.getInboxGuild().id) return;
 
     const thread = await threads.findOpenThreadByChannelId(channel.id);
-    if (! thread) return;
+    if (!thread) return;
 
     console.log(`[INFO] Auto-closing thread with ${thread.user_name} because the channel was deleted`);
     if (config.closeMessage) {

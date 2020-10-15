@@ -22,6 +22,7 @@ const threads = require('./data/threads');
 const updates = require('./data/updates');
 
 const reply = require('./modules/reply');
+const edit = require('./modules/edit');
 const close = require('./modules/close');
 const snippets = require('./modules/snippets');
 const logs = require('./modules/logs');
@@ -56,9 +57,7 @@ module.exports = {
       initBaseMessageHandlers();
       initPlugins();
 
-      console.log('');
-      console.log('Done! Now listening to DMs.');
-      console.log('');
+      console.log('\nDone! Now listening to DMs.\n');
     });
 
     bot.connect();
@@ -122,7 +121,6 @@ function initBaseMessageHandlers() {
       thread.saveChatMessageToLogs(msg);
     }
   });
-
   /**
    * When we get a private message...
    * 1) Find the open modmail thread for this user, or create a new one
@@ -256,7 +254,9 @@ function initBaseMessageHandlers() {
 
 function bump(mail, thr) {
   let channel = mail.channels.get(thr.channel_id);
+  if (!channel) return;
   let category = mail.channels.get(channel.parentID);
+  if (!category) return;
   let fp = category.channels
     .map(c => {
       return (c.position);
@@ -284,6 +284,7 @@ function initPlugins() {
   const builtInPlugins = [
     reply,
     close,
+    edit,
     logs,
     block,
     move,

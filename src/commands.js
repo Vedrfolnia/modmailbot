@@ -1,4 +1,8 @@
-const { CommandManager, defaultParameterTypes, TypeConversionError } = require('knub-command-manager');
+const {
+  CommandManager,
+  defaultParameterTypes,
+  TypeConversionError
+} = require('knub-command-manager');
 const config = require('./config');
 const utils = require('./utils');
 const threads = require('./data/threads');
@@ -10,7 +14,7 @@ module.exports = {
       types: Object.assign({}, defaultParameterTypes, {
         userId(value) {
           const userId = utils.getUserMention(value);
-          if (! userId) throw new TypeConversionError();
+          if (!userId) throw new TypeConversionError();
           return userId;
         },
 
@@ -28,9 +32,11 @@ module.exports = {
     bot.on('messageCreate', async msg => {
       if (msg.author.bot) return;
       if (msg.author.id === bot.user.id) return;
-      if (! msg.content) return;
+      if (!msg.content) return;
 
-      const matchedCommand = await manager.findMatchingCommand(msg.content, { msg });
+      const matchedCommand = await manager.findMatchingCommand(msg.content, {
+        msg
+      });
       if (matchedCommand === null) return;
       if (matchedCommand.error !== undefined) {
         utils.postError(msg.channel, matchedCommand.error);
@@ -55,7 +61,10 @@ module.exports = {
       let aliases = aliasMap.has(trigger) ? [...aliasMap.get(trigger)] : [];
       if (commandConfig.aliases) aliases.push(...commandConfig.aliases);
 
-      const cmd = manager.add(trigger, parameters, { ...commandConfig, aliases });
+      const cmd = manager.add(trigger, parameters, {
+        ...commandConfig,
+        aliases
+      });
       handlers[cmd.id] = handler;
     };
 
@@ -71,8 +80,8 @@ module.exports = {
         aliases,
         preFilters: [
           (_, context) => {
-            if (! utils.messageIsOnInboxServer(context.msg)) return false;
-            if (! utils.isStaff(context.msg.member)) return false;
+            if (!utils.messageIsOnInboxServer(context.msg)) return false;
+            if (!utils.isStaff(context.msg.member)) return false;
             return true;
           }
         ]
@@ -97,10 +106,10 @@ module.exports = {
         aliases,
         preFilters: [
           async (_, context) => {
-            if (! utils.messageIsOnInboxServer(context.msg)) return false;
-            if (! utils.isStaff(context.msg.member)) return false;
+            if (!utils.messageIsOnInboxServer(context.msg)) return false;
+            if (!utils.isStaff(context.msg.member)) return false;
             thread = await threads.findOpenThreadByChannelId(context.msg.channel.id);
-            if (! thread) return false;
+            if (!thread) return false;
             return true;
           }
         ]
@@ -112,7 +121,7 @@ module.exports = {
     };
 
     const addAlias = (originalCmd, alias) => {
-      if (! aliasMap.has(originalCmd)) {
+      if (!aliasMap.has(originalCmd)) {
         aliasMap.set(originalCmd, new Set());
       }
 

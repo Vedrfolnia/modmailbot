@@ -1,10 +1,15 @@
 const utils = require("../utils");
 const threads = require("../data/threads");
 
-module.exports = ({ bot, knex, config, commands }) => {
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
   commands.addInboxServerCommand('newthread', '<userId:userId>', async (msg, args, thread) => {
     const user = bot.users.get(args.userId);
-    if (! user) {
+    if (!user) {
       utils.postSystemMessageWithFallback(msg.channel, thread, 'User not found!');
       return;
     }

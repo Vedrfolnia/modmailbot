@@ -3,7 +3,12 @@ const moment = require('moment');
 const blocked = require("../data/blocked");
 const utils = require("../utils");
 
-module.exports = ({ bot, knex, config, commands }) => {
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
   async function removeExpiredBlocks() {
     const expiredBlocks = await blocked.getExpiredBlocks();
     const logChannel = utils.getLogChannel();
@@ -27,7 +32,7 @@ module.exports = ({ bot, knex, config, commands }) => {
 
   const blockCmd = async (msg, args, thread) => {
     const userIdToBlock = args.userId || (thread && thread.user_id);
-    if (! userIdToBlock) return;
+    if (!userIdToBlock) return;
 
     const isBlocked = await blocked.isBlocked(userIdToBlock);
     if (isBlocked) {
@@ -35,15 +40,18 @@ module.exports = ({ bot, knex, config, commands }) => {
       return;
     }
 
-    const expiresAt = args.blockTime
-      ? moment.utc().add(args.blockTime, 'ms').format('YYYY-MM-DD HH:mm:ss')
-      : null;
+    const expiresAt = args.blockTime ?
+      moment.utc().add(args.blockTime, 'ms').format('YYYY-MM-DD HH:mm:ss') :
+      null;
 
     const user = bot.users.get(userIdToBlock);
     await blocked.block(userIdToBlock, (user ? `${user.username}#${user.discriminator}` : ''), msg.author.id, expiresAt);
 
     if (expiresAt) {
-      const humanized = humanizeDuration(args.blockTime, { largest: 2, round: true });
+      const humanized = humanizeDuration(args.blockTime, {
+        largest: 2,
+        round: true
+      });
       msg.channel.createMessage(`Blocked <@${userIdToBlock}> (id \`${userIdToBlock}\`) from modmail for ${humanized}`);
     } else {
       msg.channel.createMessage(`Blocked <@${userIdToBlock}> (id \`${userIdToBlock}\`) from modmail indefinitely`);
@@ -55,21 +63,24 @@ module.exports = ({ bot, knex, config, commands }) => {
 
   const unblockCmd = async (msg, args, thread) => {
     const userIdToUnblock = args.userId || (thread && thread.user_id);
-    if (! userIdToUnblock) return;
+    if (!userIdToUnblock) return;
 
     const isBlocked = await blocked.isBlocked(userIdToUnblock);
-    if (! isBlocked) {
+    if (!isBlocked) {
       msg.channel.createMessage('User is not blocked');
       return;
     }
 
-    const unblockAt = args.unblockDelay
-      ? moment.utc().add(args.unblockDelay, 'ms').format('YYYY-MM-DD HH:mm:ss')
-      : null;
+    const unblockAt = args.unblockDelay ?
+      moment.utc().add(args.unblockDelay, 'ms').format('YYYY-MM-DD HH:mm:ss') :
+      null;
 
     const user = bot.users.get(userIdToUnblock);
     if (unblockAt) {
-      const humanized = humanizeDuration(args.unblockDelay, { largest: 2, round: true });
+      const humanized = humanizeDuration(args.unblockDelay, {
+        largest: 2,
+        round: true
+      });
       await blocked.updateExpiryTime(userIdToUnblock, unblockAt);
       msg.channel.createMessage(`Scheduled <@${userIdToUnblock}> (id \`${userIdToUnblock}\`) to be unblocked in ${humanized}`);
     } else {
@@ -81,9 +92,9 @@ module.exports = ({ bot, knex, config, commands }) => {
   commands.addInboxServerCommand('unblock', '<userId:userId> [unblockDelay:delay]', unblockCmd);
   commands.addInboxServerCommand('unblock', '[unblockDelay:delay]', unblockCmd);
 
-  commands.addInboxServerCommand('is_blocked',  '[userId:userId]',async (msg, args, thread) => {
+  commands.addInboxServerCommand('is_blocked', '[userId:userId]', async (msg, args, thread) => {
     const userIdToCheck = args.userId || (thread && thread.user_id);
-    if (! userIdToCheck) return;
+    if (!userIdToCheck) return;
 
     const blockStatus = await blocked.getBlockStatus(userIdToCheck);
     if (blockStatus.isBlocked) {

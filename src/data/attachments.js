@@ -1,7 +1,9 @@
 const Eris = require('eris');
 const fs = require('fs');
 const https = require('https');
-const {promisify} = require('util');
+const {
+  promisify
+} = require('util');
 const tmp = require('tmp');
 const config = require('../config');
 const utils = require('../utils');
@@ -38,7 +40,9 @@ async function saveLocalAttachment(attachment) {
     // If the file already exists, resolve immediately
     await access(targetPath);
     const url = await getLocalAttachmentUrl(attachment.id, attachment.filename);
-    return { url };
+    return {
+      url
+    };
   } catch (e) {}
 
   // Download the attachment
@@ -50,7 +54,9 @@ async function saveLocalAttachment(attachment) {
   // Resolve the attachment URL
   const url = await getLocalAttachmentUrl(attachment.id, attachment.filename);
 
-  return { url };
+  return {
+    url
+  };
 }
 
 /**
@@ -119,20 +125,22 @@ async function saveDiscordAttachment(attachment) {
   const attachmentChannelId = config.attachmentStorageChannelId;
   const inboxGuild = utils.getInboxGuild();
 
-  if (! inboxGuild.channels.has(attachmentChannelId)) {
+  if (!inboxGuild.channels.has(attachmentChannelId)) {
     throw new Error('Attachment storage channel not found!');
   }
 
   const attachmentChannel = inboxGuild.channels.get(attachmentChannelId);
-  if (! (attachmentChannel instanceof Eris.TextChannel)) {
+  if (!(attachmentChannel instanceof Eris.TextChannel)) {
     throw new Error('Attachment storage channel must be a text channel!');
   }
 
   const file = await attachmentToDiscordFileObject(attachment);
   const savedAttachment = await createDiscordAttachmentMessage(attachmentChannel, file);
-  if (! savedAttachment) return getErrorResult();
+  if (!savedAttachment) return getErrorResult();
 
-  return { url: savedAttachment.url };
+  return {
+    url: savedAttachment.url
+  };
 }
 
 async function createDiscordAttachmentMessage(channel, file, tries = 0) {
@@ -160,7 +168,10 @@ async function attachmentToDiscordFileObject(attachment) {
   const downloadResult = await downloadAttachment(attachment);
   const data = await readFile(downloadResult.path);
   downloadResult.cleanup();
-  return {file: data, name: attachment.filename};
+  return {
+    file: data,
+    name: attachment.filename
+  };
 }
 
 /**

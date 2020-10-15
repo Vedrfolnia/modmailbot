@@ -34,7 +34,7 @@ try {
   const modules = Object.keys(packageJson.dependencies);
   modules.forEach(mod => {
     testedPackage = mod;
-    fs.accessSync(path.join(__dirname, '..', 'node_modules', mod))
+    fs.accessSync(path.join(__dirname, '..', 'node_modules', mod));
   });
 } catch (e) {
   console.error(`Please run "npm ci" again! Package "${testedPackage}" is missing.`);
@@ -59,7 +59,7 @@ process.on('unhandledRejection', err => {
   process.exit(1);
 });
 
-(async function() {
+(async function () {
   // Make sure the database is up to date
   const [completed, newMigrations] = await knex.migrate.list();
   if (newMigrations.length > 0) {

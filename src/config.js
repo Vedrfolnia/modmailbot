@@ -42,7 +42,9 @@ if (foundConfigFile) {
     if (foundConfigFile.endsWith('.js')) {
       userConfig = require(`../${foundConfigFile}`);
     } else {
-      const raw = fs.readFileSync(__dirname + '/../' + foundConfigFile, {encoding: "utf8"});
+      const raw = fs.readFileSync(__dirname + '/../' + foundConfigFile, {
+        encoding: "utf8"
+      });
       if (foundConfigFile.endsWith('.ini') || foundConfigFile.endsWith('.ini.txt')) {
         userConfig = require('ini').decode(raw);
       } else {
@@ -128,7 +130,7 @@ const envKeyPrefix = 'MM_';
 let loadedEnvValues = 0;
 
 for (const [key, value] of Object.entries(process.env)) {
-  if (! key.startsWith(envKeyPrefix)) continue;
+  if (!key.startsWith(envKeyPrefix)) continue;
 
   // MM_CLOSE_MESSAGE -> closeMessage
   // MM_COMMAND_ALIASES__MV => commandAliases.mv
@@ -137,9 +139,9 @@ for (const [key, value] of Object.entries(process.env)) {
     .replace(/([a-z])_([a-z])/g, (m, m1, m2) => `${m1}${m2.toUpperCase()}`)
     .replace('__', '.');
 
-  userConfig[configKey] = value.includes('||')
-    ? value.split('||')
-    : value;
+  userConfig[configKey] = value.includes('||') ?
+    value.split('||') :
+    value;
 
   loadedEnvValues++;
 }
@@ -157,7 +159,7 @@ if (loadedEnvValues > 0) {
 // Convert config keys with periods to objects
 // E.g. commandAliases.mv -> commandAliases: { mv: ... }
 for (const [key, value] of Object.entries(userConfig)) {
-  if (! key.includes('.')) continue;
+  if (!key.includes('.')) continue;
 
   const keys = key.split('.');
   let cursor = userConfig;
@@ -177,7 +179,7 @@ for (const [key, value] of Object.entries(userConfig)) {
 const finalConfig = Object.assign({}, defaultConfig);
 
 for (const [prop, value] of Object.entries(userConfig)) {
-  if (! defaultConfig.hasOwnProperty(prop)) {
+  if (!defaultConfig.hasOwnProperty(prop)) {
     throw new Error(`Unknown option: ${prop}`);
   }
 
@@ -185,10 +187,10 @@ for (const [prop, value] of Object.entries(userConfig)) {
 }
 
 // Default knex config
-if (! finalConfig['knex']) {
-  finalConfig['knex'] = {
+if (!finalConfig.knex) {
+  finalConfig.knex = {
     client: 'sqlite',
-      connection: {
+    connection: {
       filename: path.join(finalConfig.dbDir, 'data.sqlite')
     },
     useNullAsDefault: true
@@ -196,7 +198,7 @@ if (! finalConfig['knex']) {
 }
 
 // Make sure migration settings are always present in knex config
-Object.assign(finalConfig['knex'], {
+Object.assign(finalConfig.knex, {
   migrations: {
     directory: path.join(finalConfig.dbDir, 'migrations')
   }
@@ -208,22 +210,22 @@ if (finalConfig.smallAttachmentLimit > 1024 * 1024 * 8) {
 }
 
 // Specific checks
-if (finalConfig.attachmentStorage === 'discord' && ! finalConfig.attachmentStorageChannelId) {
+if (finalConfig.attachmentStorage === 'discord' && !finalConfig.attachmentStorageChannelId) {
   console.error('Config option \'attachmentStorageChannelId\' is required with attachment storage \'discord\'');
   process.exit(1);
 }
 
 // Make sure mainGuildId is internally always an array
-if (! Array.isArray(finalConfig['mainGuildId'])) {
-  finalConfig['mainGuildId'] = [finalConfig['mainGuildId']];
+if (!Array.isArray(finalConfig.mainGuildId)) {
+  finalConfig.mainGuildId = [finalConfig.mainGuildId];
 }
 
 // Make sure inboxServerPermission is always an array
-if (! Array.isArray(finalConfig['inboxServerPermission'])) {
-  if (finalConfig['inboxServerPermission'] == null) {
-    finalConfig['inboxServerPermission'] = [];
+if (!Array.isArray(finalConfig.inboxServerPermission)) {
+  if (finalConfig.inboxServerPermission == null) {
+    finalConfig.inboxServerPermission = [];
   } else {
-    finalConfig['inboxServerPermission'] = [finalConfig['inboxServerPermission']];
+    finalConfig.inboxServerPermission = [finalConfig.inboxServerPermission];
   }
 }
 
@@ -278,7 +280,7 @@ for (const [key, value] of Object.entries(finalConfig)) {
 
 // Make sure all of the required config options are present
 for (const opt of required) {
-  if (! finalConfig[opt]) {
+  if (!finalConfig[opt]) {
     console.error(`Missing required configuration value: ${opt}`);
     process.exit(1);
   }

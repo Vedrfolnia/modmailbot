@@ -1,8 +1,8 @@
 {
-    "apps": [{
-        "name": "ModMailBot",
-        "cwd": "./",
-        "script": "npm",
-        "args": "start"
-    }]
+  "apps": [{
+    "name": "ModMailBot",
+    "cwd": "./",
+    "script": "npm",
+    "args": "start"
+  }]
 }

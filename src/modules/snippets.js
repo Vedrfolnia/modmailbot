@@ -2,12 +2,19 @@ const threads = require('../data/threads');
 const snippets = require('../data/snippets');
 const config = require('../config');
 const utils = require('../utils');
-const { parseArguments } = require('knub-command-manager');
+const {
+  parseArguments
+} = require('knub-command-manager');
 
 const whitespaceRegex = /\s/;
 const quoteChars = ["'", '"'];
 
-module.exports = ({ bot, knex, config, commands }) => {
+module.exports = ({
+  bot,
+  knex,
+  config,
+  commands
+}) => {
   /**
    * "Renders" a snippet by replacing all argument placeholders e.g. {1} {2} with their corresponding arguments.
    * The number in the placeholder is the argument's order in the argument list, i.e. {1} is the first argument (= index 0)
@@ -28,12 +35,12 @@ module.exports = ({ bot, knex, config, commands }) => {
    * When a staff member uses a snippet (snippet prefix + trigger word), find the snippet and post it as a reply in the thread
    */
   bot.on('messageCreate', async msg => {
-    if (! utils.messageIsOnInboxServer(msg)) return;
-    if (! utils.isStaff(msg.member)) return;
+    if (!utils.messageIsOnInboxServer(msg)) return;
+    if (!utils.isStaff(msg.member)) return;
 
     if (msg.author.bot) return;
-    if (! msg.content) return;
-    if (! msg.content.startsWith(config.snippetPrefix) && ! msg.content.startsWith(config.snippetPrefixAnon)) return;
+    if (!msg.content) return;
+    if (!msg.content.startsWith(config.snippetPrefix) && !msg.content.startsWith(config.snippetPrefixAnon)) return;
 
     let snippetPrefix, isAnonymous;
 
@@ -58,13 +65,13 @@ module.exports = ({ bot, knex, config, commands }) => {
     }
 
     const thread = await threads.findByChannelId(msg.channel.id);
-    if (! thread) return;
+    if (!thread) return;
 
-    let [, trigger, rawArgs] = msg.content.slice(snippetPrefix.length).match(/(\S+)(?:\s+(.*))?/s);
+    let [trigger, rawArgs] = msg.content.slice(snippetPrefix.length).match(/(\S+)(?:\s+(.*))?/s);
     trigger = trigger.toLowerCase();
 
     const snippet = await snippets.get(trigger);
-    if (! snippet) return;
+    if (!snippet) return;
 
     let args = rawArgs ? parseArguments(rawArgs) : [];
     args = args.map(arg => arg.value);
@@ -102,7 +109,7 @@ module.exports = ({ bot, knex, config, commands }) => {
 
   commands.addInboxServerCommand('delete_snippet', '<trigger>', async (msg, args, thread) => {
     const snippet = await snippets.get(args.trigger);
-    if (! snippet) {
+    if (!snippet) {
       utils.postSystemMessageWithFallback(msg.channel, thread, `Snippet "${args.trigger}" doesn't exist!`);
       return;
     }
@@ -115,7 +122,7 @@ module.exports = ({ bot, knex, config, commands }) => {
 
   commands.addInboxServerCommand('edit_snippet', '<trigger> [text$]', async (msg, args, thread) => {
     const snippet = await snippets.get(args.trigger);
-    if (! snippet) {
+    if (!snippet) {
       utils.postSystemMessageWithFallback(msg.channel, thread, `Snippet "${args.trigger}" doesn't exist!`);
       return;
     }

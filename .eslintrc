@@ -16,7 +16,7 @@
       "words": true,
       "nonwords": false,
       "overrides": {
-        "!": true,
+        "!": false,
         "!!": true
       }
     }]

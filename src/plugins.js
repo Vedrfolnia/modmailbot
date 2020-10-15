@@ -1,7 +1,12 @@
 const attachments = require('./data/attachments');
 
 module.exports = {
-  getPluginAPI({ bot, knex, config, commands }) {
+  getPluginAPI({
+    bot,
+    knex,
+    config,
+    commands
+  }) {
     return {
       bot,
       knex,

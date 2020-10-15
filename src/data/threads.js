@@ -1,4 +1,7 @@
-const {User, Member} = require('eris');
+const {
+  User,
+  Member
+} = require('eris');
 
 const transliterate = require('transliteration');
 const moment = require('moment');
@@ -12,7 +15,9 @@ const utils = require('../utils');
 const updates = require('./updates');
 
 const Thread = require('./Thread');
-const {THREAD_STATUS} = require('./constants');
+const {
+  THREAD_STATUS
+} = require('./constants');
 
 const MINUTES = 60 * 1000;
 const HOURS = 60 * MINUTES;
@@ -45,7 +50,10 @@ async function findOpenThreadByUserId(userId) {
 function getHeaderGuildInfo(member) {
   return {
     nickname: member.nick || member.user.username,
-    joinDate: humanizeDuration(Date.now() - member.joinedAt, {largest: 2, round: true})
+    joinDate: humanizeDuration(Date.now() - member.joinedAt, {
+      largest: 2,
+      round: true
+    })
   };
 }
 
@@ -65,8 +73,8 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
 
   // If set in config, check that the user's account is old enough (time since they registered on Discord)
   // If the account is too new, don't start a new thread and optionally reply to them with a message
-  if (config.requiredAccountAge && ! ignoreRequirements) {
-    if (user.createdAt > moment() - config.requiredAccountAge * HOURS){
+  if (config.requiredAccountAge && !ignoreRequirements) {
+    if (user.createdAt > moment() - config.requiredAccountAge * HOURS) {
       if (config.accountAgeDeniedMessage) {
         const accountAgeDeniedMessage = utils.readMultilineConfigValue(config.accountAgeDeniedMessage);
         const privateChannel = await user.getDMChannel();
@@ -83,7 +91,7 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
   for (const guild of mainGuilds) {
     let member = guild.members.get(user.id);
 
-    if (! member) {
+    if (!member) {
       try {
         member = await bot.getRESTGuildMember(guild.id, user.id);
       } catch (e) {
@@ -92,20 +100,26 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
     }
 
     if (member) {
-      userGuildData.set(guild.id, { guild, member });
+      userGuildData.set(guild.id, {
+        guild,
+        member
+      });
     }
   }
 
   // If set in config, check that the user has been a member of one of the main guilds long enough
   // If they haven't, don't start a new thread and optionally reply to them with a message
-  if (config.requiredTimeOnServer && ! ignoreRequirements) {
+  if (config.requiredTimeOnServer && !ignoreRequirements) {
     // Check if the user joined any of the main servers a long enough time ago
     // If we don't see this user on any of the main guilds (the size check below), assume we're just missing some data and give the user the benefit of the doubt
-    const isAllowed = userGuildData.size === 0 || Array.from(userGuildData.values()).some(({guild, member}) => {
+    const isAllowed = userGuildData.size === 0 || Array.from(userGuildData.values()).some(({
+      guild,
+      member
+    }) => {
       return member.joinedAt < moment() - config.requiredTimeOnServer * MINUTES;
     });
 
-    if (! isAllowed) {
+    if (!isAllowed) {
       if (config.timeOnServerDeniedMessage) {
         const timeOnServerDeniedMessage = utils.readMultilineConfigValue(config.timeOnServerDeniedMessage);
         const privateChannel = await user.getDMChannel();
@@ -138,7 +152,7 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
     }
   }
 
-  if (! newThreadCategoryId && config.categoryAutomation.newThread) {
+  if (!newThreadCategoryId && config.categoryAutomation.newThread) {
     // Blanket category id for all new threads (also functions as a fallback for the above)
     newThreadCategoryId = config.categoryAutomation.newThread;
   }
@@ -164,7 +178,7 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
   const newThread = await findById(newThreadId);
   let responseMessageError = null;
 
-  if (! quiet) {
+  if (!quiet) {
     // Ping moderators of the new thread
     if (config.mentionRole) {
       await newThread.postNonLogMessage({
@@ -189,7 +203,10 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
   const infoHeaderItems = [];
 
   // Account age
-  const accountAge = humanizeDuration(Date.now() - user.createdAt, {largest: 2, round: true});
+  const accountAge = humanizeDuration(Date.now() - user.createdAt, {
+    largest: 2,
+    round: true
+  });
   infoHeaderItems.push(`ACCOUNT AGE **${accountAge}**`);
 
   // User id (and mention, if enabled)
@@ -203,7 +220,10 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
 
   // Guild member info
   for (const [guildId, guildData] of userGuildData.entries()) {
-    const {nickname, joinDate} = getHeaderGuildInfo(guildData.member);
+    const {
+      nickname,
+      joinDate
+    } = getHeaderGuildInfo(guildData.member);
     const headerItems = [
       `NICKNAME **${utils.escapeMarkdown(nickname)}**`,
       `JOINED **${joinDate}** ago`
@@ -264,7 +284,12 @@ async function createNewThreadForUser(user, quiet = false, ignoreRequirements = 
 async function createThreadInDB(data) {
   const threadId = uuid.v4();
   const now = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-  const finalData = Object.assign({created_at: now, is_legacy: 0}, data, {id: threadId});
+  const finalData = Object.assign({
+    created_at: now,
+    is_legacy: 0
+  }, data, {
+    id: threadId
+  });
 
   await knex('threads').insert(finalData);
 

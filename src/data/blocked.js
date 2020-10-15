@@ -11,7 +11,7 @@ async function getBlockStatus(userId) {
     .first();
 
   return {
-    isBlocked: !! row,
+    isBlocked: !!row,
     expiresAt: row && row.expires_at
   };
 }

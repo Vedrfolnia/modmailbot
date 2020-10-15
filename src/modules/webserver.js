@@ -8,7 +8,9 @@ const config = require('../config');
 const threads = require('../data/threads');
 const attachments = require('../data/attachments');
 
-const {THREAD_MESSAGE_TYPE} = require('../data/constants');
+const {
+  THREAD_MESSAGE_TYPE
+} = require('../data/constants');
 
 function notfound(res) {
   res.statusCode = 404;
@@ -20,17 +22,17 @@ async function serveLogs(req, res, pathParts, query) {
   if (threadId.match(/^[0-9a-f\-]+$/) === null) return notfound(res);
 
   const thread = await threads.findById(threadId);
-  if (! thread) return notfound(res);
+  if (!thread) return notfound(res);
 
   let threadMessages = await thread.getThreadMessages();
 
   if (query.simple) {
     threadMessages = threadMessages.filter(message => {
       return (
-        message.message_type !== THREAD_MESSAGE_TYPE.SYSTEM
-        && message.message_type !== THREAD_MESSAGE_TYPE.SYSTEM_TO_USER
-        && message.message_type !== THREAD_MESSAGE_TYPE.CHAT
-        && message.message_type !== THREAD_MESSAGE_TYPE.COMMAND
+        message.message_type !== THREAD_MESSAGE_TYPE.SYSTEM &&
+        message.message_type !== THREAD_MESSAGE_TYPE.SYSTEM_TO_USER &&
+        message.message_type !== THREAD_MESSAGE_TYPE.CHAT &&
+        message.message_type !== THREAD_MESSAGE_TYPE.COMMAND
       );
     });
   }
@@ -100,7 +102,7 @@ function serveAttachments(req, res, pathParts) {
 
     const read = fs.createReadStream(attachmentPath);
     read.pipe(res);
-  })
+  });
 }
 
 module.exports = () => {
